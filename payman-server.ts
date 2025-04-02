@@ -29,12 +29,12 @@ server.tool(
   }
 );
 
-// Tool to create a new payee
+//Tool to create Test Payee
 server.tool(
-  "create-payee",
+  "create-test-rails-payee",
   {
     name: z.string().describe("Name of the payee"),
-    type: z.string().default("TEST_RAILS").describe("Type of payment rails to use"),
+    type: z.literal("TEST_RAILS").default("TEST_RAILS").describe("Type of payment rails to use"),
     tags: z.array(z.string()).optional().describe("Optional tags for the payee")
   },
   async ({ name, type, tags = [] }) => {
@@ -73,7 +73,7 @@ server.tool(
       return {
         content: [{ 
           type: "text", 
-          text: `Payee created successfully: ${JSON.stringify(data)}` 
+          text: `TEST_RAILS payee created successfully: ${JSON.stringify(data)}` 
         }]
       };
     } catch (error) {
@@ -88,12 +88,164 @@ server.tool(
   }
 );
 
+// Tool to create a US_ACH payee
+server.tool(
+  "create-us-ach-payee",
+  {
+    type: z.literal("US_ACH").default("US_ACH").describe("Type of payment rails to use"),
+    accountType: z.enum(["checking", "savings"]).describe("The type of account (checking or savings)"),
+    accountNumber: z.string().describe("The bank account number for the account"),
+    routingNumber: z.string().describe("The routing number of the bank"),
+    accountHolderName: z.string().describe("The name of the account holder"),
+    accountHolderType: z.enum(["individual", "business"]).describe("The type of the account holder"),
+    name: z.string().describe("The name you wish to associate with this payee for future lookups"),
+    tags: z.array(z.string()).optional().describe("Optional labels you wish to assign to this payee"),
+    contactDetails: z.object({
+      email: z.string().email().optional().describe("The email address of the payee contact"),
+      phoneNumber: z.string().optional().describe("The phone number of the payee contact"),
+      address: z.object({
+        line1: z.string().optional().describe("Address line 1"),
+        line2: z.string().optional().describe("Address line 2"),
+        city: z.string().optional().describe("City"),
+        state: z.string().optional().describe("State"),
+        postalCode: z.string().optional().describe("Postal code"),
+        country: z.string().optional().describe("Country")
+      }).optional().describe("The address of the payee contact")
+    }).optional().describe("Contact details for this payee")
+  },
+  async (params) => {
+    if (!paymanApiKey) {
+      return {
+        content: [{ 
+          type: "text", 
+          text: "API key has not been set. Please use the set-api-key tool first." 
+        }],
+        isError: true
+      };
+    }
+
+    try {
+      const response = await fetch('https://agent.payman.ai/api/payments/payees', {
+        method: 'POST',
+        headers: {
+          'x-payman-api-secret': paymanApiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(params)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          content: [{ 
+            type: "text", 
+            text: `Error creating US_ACH payee: ${JSON.stringify(data)}` 
+          }],
+          isError: true
+        };
+      }
+
+      return {
+        content: [{ 
+          type: "text", 
+          text: `US_ACH payee created successfully: ${JSON.stringify(data)}` 
+        }]
+      };
+    } catch (error) {
+      return {
+        content: [{ 
+          type: "text", 
+          text: `Failed to create US_ACH payee: ${error instanceof Error ? error.message : String(error)}` 
+        }],
+        isError: true
+      };
+    }
+  }
+);
+
+// Tool to create a CRYPTO_ADDRESS payee
+server.tool(
+  "create-crypto-payee",
+  {
+    type: z.literal("CRYPTO_ADDRESS").default("CRYPTO_ADDRESS").describe("Type of payment rails to use"),
+    address: z.string().describe("The cryptocurrency address to send funds to"),
+    chain: z.string().describe("The blockchain to use for the transaction"),
+    currency: z.string().describe("The currency/token to use for the transaction"),
+    name: z.string().describe("The name you wish to associate with this payee for future lookups"),
+    tags: z.array(z.string()).optional().describe("Optional labels you wish to assign to this payee"),
+    contactDetails: z.object({
+      email: z.string().email().optional().describe("The email address of the payee contact"),
+      phoneNumber: z.string().optional().describe("The phone number of the payee contact"),
+      address: z.object({
+        line1: z.string().optional().describe("Address line 1"),
+        line2: z.string().optional().describe("Address line 2"),
+        city: z.string().optional().describe("City"),
+        state: z.string().optional().describe("State"),
+        postalCode: z.string().optional().describe("Postal code"),
+        country: z.string().optional().describe("Country")
+      }).optional().describe("The address of the payee contact")
+    }).optional().describe("Contact details for this payee")
+  },
+  async (params) => {
+    if (!paymanApiKey) {
+      return {
+        content: [{ 
+          type: "text", 
+          text: "API key has not been set. Please use the set-api-key tool first." 
+        }],
+        isError: true
+      };
+    }
+
+    try {
+      const response = await fetch('https://agent.payman.ai/api/payments/payees', {
+        method: 'POST',
+        headers: {
+          'x-payman-api-secret': paymanApiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(params)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          content: [{ 
+            type: "text", 
+            text: `Error creating CRYPTO_ADDRESS payee: ${JSON.stringify(data)}` 
+          }],
+          isError: true
+        };
+      }
+
+      return {
+        content: [{ 
+          type: "text", 
+          text: `CRYPTO_ADDRESS payee created successfully: ${JSON.stringify(data)}` 
+        }]
+      };
+    } catch (error) {
+      return {
+        content: [{ 
+          type: "text", 
+          text: `Failed to create CRYPTO_ADDRESS payee: ${error instanceof Error ? error.message : String(error)}` 
+        }],
+        isError: true
+      };
+    }
+  }
+);
+
+
 // Tool to send a payment
 server.tool(
   "send-payment",
   {
     payeeId: z.string().describe("ID of the payee to send payment to"),
     amountDecimal: z.number().positive().describe("Amount to send (in decimal)"),
+    walletId : z.string().optional().describe("The ID of the specific wallet from which to send the funds"),
     memo: z.string().optional().describe("Optional memo for the payment"),
     metadata: z.record(z.any()).optional().describe("Optional metadata for the payment")
   },
@@ -148,11 +300,22 @@ server.tool(
   }
 );
 
-// Tool to search for payees
+// Tool to search for payees with optional query parameters
 server.tool(
   "search-payees",
-  {},
-  async () => {
+  {
+    name: z.string().optional().describe("The name of the payee to search for (partial, case-insensitive match)"),
+    contactEmail: z.string().email().optional().describe("The contact email to search for"),
+    contactPhoneNumber: z.string().optional().describe("The contact phone number to search for"),
+    contactTaxId: z.string().optional().describe("The contact tax id to search for"),
+    accountNumber: z.string().optional().describe("The US Bank account number to search for"),
+    routingNumber: z.string().optional().describe("The US Bank routing number to search for"),
+    agentReference: z.string().optional().describe("The Payman agent reference (id or handle) to search for"),
+    cryptoAddress: z.string().optional().describe("The crypto address to search for"),
+    cryptoCurrency: z.string().optional().describe("The crypto currency to search for"),
+    cryptoChain: z.string().optional().describe("The crypto chain to search for")
+  },
+  async (params) => {
     if (!paymanApiKey) {
       return {
         content: [{ 
@@ -164,11 +327,22 @@ server.tool(
     }
 
     try {
-      const response = await fetch('https://agent.payman.ai/api/payments/search-payees', {
+      // Build query parameters if any are provided
+      const queryParams = Object.entries(params)
+        .filter(([_, value]) => value !== undefined)
+        .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+        .join('&');
+      
+      // Construct the URL with query parameters if present
+      const url = queryParams 
+        ? `https://agent.payman.ai/api/payments/search-payees?${queryParams}`
+        : 'https://agent.payman.ai/api/payments/search-payees';
+      
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'x-payman-api-secret': paymanApiKey,
-          'content-type': 'application/json'  
+          'Content-Type': 'application/json'
         }
       });
 
@@ -191,10 +365,16 @@ server.tool(
       }
 
       const data = await response.json();
+      
+      // If search parameters were provided, include them in the response
+      const searchDescription = Object.keys(params).length > 0
+        ? `Search results for criteria: ${JSON.stringify(params)}`
+        : "All payees:";
+      
       return {
         content: [{ 
           type: "text", 
-          text: `Payees found: ${JSON.stringify(data, null, 2)}` 
+          text: `${searchDescription}\n\n${JSON.stringify(data, null, 2)}` 
         }]
       };
     } catch (error) {
