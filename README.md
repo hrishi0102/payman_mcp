@@ -1,5 +1,7 @@
 # Payman AI MCP Server
 
+[![smithery badge](https://smithery.ai/badge/@hrishi0102/payman_mcp)](https://smithery.ai/server/@hrishi0102/payman_mcp)
+
 MCP server that provides easy way to Payman AI's API's and let's users create payees, search payees, send payments and get balances using prompts.
 
 
@@ -11,6 +13,15 @@ MCP server that provides easy way to Payman AI's API's and let's users create pa
 
 ## Installation
 
+### Installing via Smithery
+
+To install Payman AI for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@hrishi0102/payman_mcp):
+
+```bash
+npx -y @smithery/cli install @hrishi0102/payman_mcp --client claude
+```
+
+### Manual Installation
 1. Clone the repository:
 
     ```bash
