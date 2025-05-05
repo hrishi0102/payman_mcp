@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/hrishi0102-payman-mcp-badge.png)](https://mseep.ai/app/hrishi0102-payman-mcp)
+
 # Payman API MCP Server
 [![smithery badge](https://smithery.ai/badge/@hrishi0102/payman_mcp)](https://smithery.ai/server/@hrishi0102/payman_mcp)
 
